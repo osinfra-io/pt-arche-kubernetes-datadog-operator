@@ -196,7 +196,7 @@ resource "kubernetes_manifest" "agent" {
   }
 }
 
-# Kubernetes Manifest
+# Kubernetes Manifest Resource
 # https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/manifest
 
 resource "kubernetes_manifest" "kubernetes_monitor_templates" {
