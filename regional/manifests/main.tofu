@@ -196,6 +196,20 @@ resource "kubernetes_manifest" "agent" {
   }
 }
 
+# Kubernetes Priority Class Resource
+# https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/priority_class_v1
+
+resource "kubernetes_priority_class_v1" "datadog" {
+  description    = "Allow Datadog Agent Components to be scheduled with higher priority."
+  global_default = false
+
+  metadata {
+    name = "datadog"
+  }
+
+  value = 1000000
+}
+
 # Kubernetes Manifest Resource
 # https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/manifest
 
@@ -235,18 +249,4 @@ resource "kubernetes_manifest" "kubernetes_monitor_templates" {
       priority = each.value.priority
     }
   }
-}
-
-# Kubernetes Priority Class Resource
-# https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/priority_class_v1
-
-resource "kubernetes_priority_class_v1" "datadog" {
-  description    = "Allow Datadog Agent Components to be scheduled with higher priority."
-  global_default = false
-
-  metadata {
-    name = "datadog"
-  }
-
-  value = 1000000
 }
