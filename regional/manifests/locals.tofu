@@ -16,7 +16,7 @@ locals {
     }
   ]
 
-  cluster_name = module.helpers.zone != null ? "${var.cluster_prefix}-${module.helpers.region}-${module.helpers.zone}-${module.helpers.env}" : "${var.cluster_prefix}-${module.helpers.region}-${module.helpers.env}"
+  cluster_name = module.core_helpers.zone != null ? "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.zone}-${module.core_helpers.env}" : "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.env}"
 
   kubernetes_monitor_templates = {
     "crash-loop-backoff" = {
@@ -196,9 +196,9 @@ locals {
 
   tags = [
     "cluster:${local.cluster_name}",
-    "env:${module.helpers.environment}",
+    "env:${module.core_helpers.environment}",
     "generated:kubernetes",
-    "region:${module.helpers.region}",
+    "region:${module.core_helpers.region}",
     "team:${var.team}"
   ]
 

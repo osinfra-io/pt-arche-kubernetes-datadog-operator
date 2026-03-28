@@ -110,7 +110,7 @@ resource "kubernetes_manifest" "agent" {
           env = concat(local.cluster_agent_env_vars, var.cluster_agent_env_vars)
 
           labels = {
-            "tags.datadoghq.com/env"     = module.helpers.environment
+            "tags.datadoghq.com/env"     = module.core_helpers.environment
             "tags.datadoghq.com/service" = "datadog-cluster-agent"
             "tags.datadoghq.com/version" = var.node_agent_tag
           }
@@ -178,7 +178,7 @@ resource "kubernetes_manifest" "agent" {
           }
 
           labels = {
-            "tags.datadoghq.com/env"     = module.helpers.environment
+            "tags.datadoghq.com/env"     = module.core_helpers.environment
             "tags.datadoghq.com/service" = "datadog-agent"
             "tags.datadoghq.com/version" = var.node_agent_tag
           }
@@ -195,9 +195,6 @@ resource "kubernetes_manifest" "agent" {
     force_conflicts = true
   }
 }
-
-# Kubernetes Manifest Resource
-# https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/manifest
 
 resource "kubernetes_manifest" "kubernetes_monitor_templates" {
   for_each = local.kubernetes_monitor_templates

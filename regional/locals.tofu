@@ -2,7 +2,7 @@
 # https://opentofu.org/docs/language/values/locals
 
 locals {
-  cluster_name = module.helpers.zone != null ? "${var.cluster_prefix}-${module.helpers.region}-${module.helpers.zone}-${module.helpers.env}" : "${var.cluster_prefix}-${module.helpers.region}-${module.helpers.env}"
+  cluster_name = module.core_helpers.zone != null ? "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.zone}-${module.core_helpers.env}" : "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.env}"
 
   helm_sensitive_values = [
     for k, v in local.helm_sensitive_values_map : {
@@ -26,7 +26,7 @@ locals {
   helm_values_map = {
     "clusterName"                              = local.cluster_name
     "datadogMonitor.enabled"                   = true
-    "podLabels.tags\\.datadoghq\\.com/env"     = module.helpers.environment
+    "podLabels.tags\\.datadoghq\\.com/env"     = module.core_helpers.environment
     "podLabels.tags\\.datadoghq\\.com/version" = var.operator_version
     "resources.limits.cpu"                     = var.limits_cpu
     "resources.limits.memory"                  = var.limits_memory
