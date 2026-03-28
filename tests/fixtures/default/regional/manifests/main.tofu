@@ -9,20 +9,24 @@ terraform {
   }
 }
 
+# Kubernetes Datadog Operator
+# https://github.com/osinfra-io/pt-arche-kubernetes-datadog-operator
+
 module "test_manifests" {
   source = "../../../../../regional/manifests"
 
-  api_key                    = "mock"
-  app_key                    = "mock"
+  api_key        = "mock"
+  app_key        = "mock"
+  cluster_prefix = "mock"
+
   enable_apm_instrumentation = true
-  cluster_prefix             = "mock"
 
   node_agent_tolerations = [
     {
+      effect   = "NoExecute"
       key      = "dedicated"
       operator = "Equal"
       value    = "mock"
-      effect   = "NoExecute"
     }
   ]
 

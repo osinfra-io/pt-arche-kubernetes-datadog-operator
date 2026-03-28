@@ -13,6 +13,9 @@ terraform {
   }
 }
 
+# Kubernetes Datadog Operator
+# https://github.com/osinfra-io/pt-arche-kubernetes-datadog-operator
+
 module "test" {
   source = "../../../../regional"
 
