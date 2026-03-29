@@ -16,7 +16,11 @@ locals {
     }
   ]
 
+  cluster_agent_env_vars_merged = concat(local.cluster_agent_env_vars, var.cluster_agent_env_vars)
+
   cluster_name = module.core_helpers.zone != null ? "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.zone}-${module.core_helpers.env}" : "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.env}"
+
+  kubernetes_monitor_tags = concat(local.tags, ["integration:kubernetes"])
 
   kubernetes_monitor_templates = {
     "crash-loop-backoff" = {
@@ -193,6 +197,8 @@ locals {
       value = "cilium ${var.node_agent_env_dd_ignore_auto_conf}"
     }
   ]
+
+  registry = "${var.registry}/datadog"
 
   tags = [
     "cluster:${local.cluster_name}",

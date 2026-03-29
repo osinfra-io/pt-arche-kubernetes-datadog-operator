@@ -24,13 +24,13 @@ resource "helm_release" "datadog_operator" {
 # https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/secret_v1
 
 resource "kubernetes_secret_v1" "datadog_operator_secret" {
-  metadata {
-    name      = "datadog-operator-secret"
-    namespace = "datadog"
-  }
-
   data = {
     "api-key" = var.api_key
     "app-key" = var.app_key
+  }
+
+  metadata {
+    name      = "datadog-operator-secret"
+    namespace = "datadog"
   }
 }
