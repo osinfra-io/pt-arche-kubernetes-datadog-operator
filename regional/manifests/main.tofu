@@ -2,6 +2,11 @@
 # https://search.opentofu.org/provider/hashicorp/kubernetes/latest/docs/resources/manifest
 
 resource "kubernetes_manifest" "agent" {
+  field_manager {
+    force_conflicts = true
+    name            = "OpenTofu"
+  }
+
   manifest = {
     apiVersion = "datadoghq.com/v2alpha1"
     kind       = "DatadogAgent"
@@ -14,8 +19,8 @@ resource "kubernetes_manifest" "agent" {
     spec = {
       features = {
         admissionController = {
-          enabled                = true
           agentCommunicationMode = "service"
+          enabled                = true
         }
 
         apm = {
@@ -102,12 +107,12 @@ resource "kubernetes_manifest" "agent" {
           appKey = var.app_key
         }
 
-        registry = "${var.registry}/datadog"
+        registry = local.registry
       }
 
       override = {
         clusterAgent = {
-          env = concat(local.cluster_agent_env_vars, var.cluster_agent_env_vars)
+          env = local.cluster_agent_env_vars_merged
 
           labels = {
             "tags.datadoghq.com/env"     = module.core_helpers.environment
@@ -118,6 +123,10 @@ resource "kubernetes_manifest" "agent" {
 
         nodeAgent = {
           containers = {
+            agent = {
+              logLevel = var.node_agent_log_level
+            }
+
             all = {
               resources = {
 
@@ -137,10 +146,6 @@ resource "kubernetes_manifest" "agent" {
               }
             }
 
-            agent = {
-              logLevel = var.node_agent_log_level
-            }
-
             trace-agent = {
               env = local.trace_agent_env_vars
             }
@@ -150,6 +155,15 @@ resource "kubernetes_manifest" "agent" {
 
           extraConfd = {
             configDataMap = {
+              "cilium.yaml" = <<-EOF
+              ad_identifiers:
+                - cilium
+              init_config:
+              instances:
+                - agent_endpoint: http://%%host%%:9990/metrics
+                  use_openmetrics: true
+              EOF
+
               "envoy.yaml" = <<-EOF
               ad_identifiers:
                 - proxyv2
@@ -158,15 +172,6 @@ resource "kubernetes_manifest" "agent" {
                 - openmetrics_endpoint: http://%%host%%:15020/stats/prometheus
               logs:
                 - source: envoy
-              EOF
-
-              "cilium.yaml" = <<-EOF
-              ad_identifiers:
-                - cilium
-              init_config:
-              instances:
-                - agent_endpoint: http://%%host%%:9990/metrics
-                  use_openmetrics: true
               EOF
             }
           }
@@ -189,11 +194,6 @@ resource "kubernetes_manifest" "agent" {
       }
     }
   }
-
-  field_manager {
-    name            = "OpenTofu"
-    force_conflicts = true
-  }
 }
 
 resource "kubernetes_manifest" "kubernetes_monitor_templates" {
@@ -209,27 +209,22 @@ resource "kubernetes_manifest" "kubernetes_monitor_templates" {
     }
 
     spec = {
-      query   = each.value.query
-      type    = each.value.type
-      name    = each.value.name
       message = each.value.message
-
-      tags = concat(local.tags,
-        [
-          "integration:kubernetes"
-        ]
-      )
+      name    = each.value.name
 
       options = {
+        notifyNoData = false
+
         thresholds = {
           critical = each.value.thresholds_critical
           warning  = each.value.thresholds_warning
         }
-
-        notifyNoData = false
       }
 
       priority = each.value.priority
+      query    = each.value.query
+      tags     = local.kubernetes_monitor_tags
+      type     = each.value.type
     }
   }
 }
