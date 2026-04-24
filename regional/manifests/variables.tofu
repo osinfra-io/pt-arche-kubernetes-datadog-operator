@@ -46,6 +46,12 @@ variable "cluster_agent_requests_memory" {
   default     = "128Mi"
 }
 
+variable "cluster_agent_tag" {
+  description = "Tag for the Datadog cluster agent image"
+  type        = string
+  default     = "7.78.1"
+}
+
 variable "cluster_prefix" {
   description = "Prefix for your cluster name, region, and zone (if applicable) will be added to the end of the cluster name"
   type        = string
@@ -53,50 +59,76 @@ variable "cluster_prefix" {
 
 variable "enable_apm" {
   description = <<EOF
-    Enable Application Performance Monitoring (APM)
-    Cost: $36.00 per host monthly
+    Enable Application Performance Monitoring (APM).
+    Cost: $31/host/month (annual) with Infrastructure Monitoring; $36/host/month standalone.
+    On-demand: $48/host/month with Infra, $36 standalone.
+    Includes Universal Service Monitoring (USM) on the same host at no additional cost.
+    Allotments: 150 GB ingested spans and 1M indexed spans per APM host per month.
     EOF
   type        = bool
   default     = false
 }
 
 variable "enable_apm_instrumentation" {
-  description = "Enable Application Performance Monitoring (APM) Single-Step instrumentation"
+  description = "Enable Application Performance Monitoring (APM) Single-Step instrumentation. No additional cost beyond the APM license; requires enable_apm = true."
   type        = bool
   default     = false
 }
 
 variable "enable_asm_iast" {
-  description = "Enable Interactive Application Security Testing (IAST)"
+  description = "Enable Interactive Application Security Testing (IAST). Included as part of App and API Protection (enable_asm_threats); no separate cost."
   type        = bool
   default     = false
 }
 
 variable "enable_asm_sca" {
-  description = "Enable Software Composition Analysis (SCA)"
+  description = "Enable Software Composition Analysis (SCA). Part of the App and API Protection suite; no separate cost beyond enable_asm_threats."
   type        = bool
   default     = false
 }
 
 variable "enable_asm_threats" {
   description = <<EOF
-    Enable ASM App & API Protection
-    Cost: $36.00 per host monthly
+    Enable App and API Protection (threat detection and blocking via in-app WAF).
+    Cost: $31/host/month (annual) with Infrastructure Monitoring; $36/host/month standalone.
+    On-demand: $36/host/month. Requires Infrastructure Monitoring.
+    Includes IAST (enable_asm_iast) and SCA (enable_asm_sca) at no extra cost.
     EOF
   type        = bool
   default     = false
 }
 
+variable "enable_autoscaling_cluster" {
+  description = "Enable cluster autoscaling product (requires Cluster Agent 7.74.0+)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_autoscaling_workload" {
+  description = "Enable workload autoscaling product"
+  type        = bool
+  default     = true
+}
+
+variable "enable_cluster_checks_runners" {
+  description = "Enable dedicated cluster checks runner pods to offload cluster-level checks from the cluster agent (recommended for large clusters)"
+  type        = bool
+  default     = false
+}
+
 variable "enable_container_collect_all" {
-  description = "Enable log collection for all containers"
+  description = "Enable log collection for all containers. Log ingestion and indexing are billed separately under Log Management; see https://www.datadoghq.com/pricing/?product=log-management."
   type        = bool
   default     = true
 }
 
 variable "enable_cspm" {
   description = <<EOF
-    Enable Cloud Security Posture Management (CSPM)
-    Cost: $12.00 per host monthly
+    Enable Cloud Security Posture Management (CSPM) via CSM Pro.
+    CSM Pro includes CSPM, KSPM, vulnerability management for containers and hosts, and CIEM.
+    Cost: $10/host/month (annual); $12/host/month on-demand. Standalone — no Infrastructure Monitoring required.
+    CSM Enterprise (adds Workload Protection + file integrity monitoring): $25/host/month (annual), requires Infra Enterprise.
+    Also available bundled in DevSecOps Pro ($22/host) or DevSecOps Enterprise ($34/host).
     EOF
   type        = bool
   default     = false
@@ -104,15 +136,22 @@ variable "enable_cspm" {
 
 variable "enable_cws" {
   description = <<EOF
-    Enable Cloud Workload Security (CWS)
-    Cost: $36.00 per host monthly
+    Enable Cloud Workload Security (CWS), now named Workload Protection — runtime threat detection via eBPF.
+    Standalone cost: $15/host/month (annual); $18/host/month on-demand. 4 containers allotted per host.
+    Also included in CSM Enterprise ($25/host/month) and DevSecOps Enterprise ($34/host/month).
     EOF
   type        = bool
   default     = false
 }
 
 variable "enable_cws_network_detection" {
-  description = "Enable Cloud Workload Security (CWS) network detections"
+  description = "Enable Cloud Workload Security (CWS) network detections. Requires enable_cws = true; no additional cost beyond the CWS/Workload Protection license."
+  type        = bool
+  default     = false
+}
+
+variable "enable_ebpf_check" {
+  description = "Enable the eBPF check for kernel-level observability"
   type        = bool
   default     = false
 }
@@ -123,22 +162,44 @@ variable "enable_external_metrics_server" {
   default     = true
 }
 
+variable "enable_helm_check" {
+  description = "Enable the Helm check to monitor Helm releases in the cluster"
+  type        = bool
+  default     = false
+}
+
 variable "enable_jmx" {
   description = "Whether the Agent image should support JMX"
   type        = bool
   default     = false
 }
 
+variable "enable_live_process_collection" {
+  description = "Enable live process monitoring (process details visible in Datadog). Included in Infrastructure Enterprise ($23/host/month annual); not available on Infrastructure Pro ($15/host/month). No separate SKU cost."
+  type        = bool
+  default     = false
+}
+
 variable "enable_log_collection" {
-  description = "Enable log collection"
+  description = "Enable log collection from the node agent. Log ingestion and indexing are billed separately under Log Management; see https://www.datadoghq.com/pricing/?product=log-management."
   type        = bool
   default     = true
 }
 
 variable "enable_npm" {
-  description = "Enable Network Performance Monitoring (NPM)"
+  description = <<EOF
+    Enable Cloud Network Monitoring (CNM/NPM) — host-level network traffic visibility using eBPF.
+    Cost: $5/host/month (annual); $7.20/host/month on-demand.
+    Requires Infrastructure Pro or Enterprise on every monitored host.
+    EOF
   type        = bool
   default     = true
+}
+
+variable "enable_oom_kill" {
+  description = "Enable the OOMKill eBPF-based check to track out-of-memory events"
+  type        = bool
+  default     = false
 }
 
 variable "enable_orchestrator_explorer" {
@@ -147,14 +208,66 @@ variable "enable_orchestrator_explorer" {
   default     = true
 }
 
+variable "enable_otel_collector" {
+  description = "Enable the embedded OpenTelemetry collector in the Agent"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otlp_grpc" {
+  description = "Enable the OTLP/gRPC receiver (port 4317) to ingest OpenTelemetry traces and metrics"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otlp_http" {
+  description = "Enable the OTLP/HTTP receiver (port 4318) to ingest OpenTelemetry traces and metrics"
+  type        = bool
+  default     = false
+}
+
+variable "enable_prometheus_scrape" {
+  description = "Enable Prometheus autodiscovery to scrape pods and services exposing Prometheus metrics. Scraped metrics count as custom metrics; Infrastructure Pro allots 100 custom metrics/host, Enterprise allots 200/host. Additional custom metrics cost ~$1/100 metrics/month."
+  type        = bool
+  default     = false
+}
+
 variable "enable_sbom" {
-  description = "Enable Software Bill of Materials (SBOM)"
+  description = "Enable Software Bill of Materials (SBOM) for container image vulnerability scanning. Container vulnerability management is included in CSM Pro ($10/host/month annual) and CSM Enterprise ($25/host/month annual)."
   type        = bool
   default     = true
 }
 
+variable "enable_sbom_enrichment_usage" {
+  description = "Enable SBOM enrichment with runtime package-in-use detection (requires system-probe for eBPF-based file access tracking). No additional cost beyond the CSM Pro/Enterprise license that covers vulnerability management."
+  type        = bool
+  default     = false
+}
+
+variable "enable_sbom_host" {
+  description = "Enable SBOM collection for host packages (OS-level package inventory). Included in CSM Pro ($10/host/month annual) and CSM Enterprise ($25/host/month annual) vulnerability management."
+  type        = bool
+  default     = false
+}
+
+variable "enable_service_discovery" {
+  description = "Enable the service discovery check"
+  type        = bool
+  default     = false
+}
+
+variable "enable_tcp_queue_length" {
+  description = "Enable the TCP queue length eBPF-based check"
+  type        = bool
+  default     = false
+}
+
 variable "enable_usm" {
-  description = "Enable Universal Service Monitoring (USM)"
+  description = <<EOF
+    Enable Universal Service Monitoring (USM) — automatic service discovery and RED metrics via eBPF, no code changes required.
+    Cost: $9/host/month (annual); $13/host/month on-demand. Requires Infrastructure Monitoring.
+    Free on hosts where APM is already purchased (APM includes USM at no additional cost).
+    EOF
   type        = bool
   default     = true
 }
@@ -210,7 +323,7 @@ variable "node_agent_requests_memory" {
 variable "node_agent_tag" {
   description = "Tag for the Datadog node agent image"
   type        = string
-  default     = "7.76.2"
+  default     = "7.78.1"
 }
 
 variable "node_agent_tolerations" {

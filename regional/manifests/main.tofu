@@ -51,9 +51,17 @@ resource "kubernetes_manifest" "agent" {
         }
 
         autoscaling = {
-          workload = {
-            enabled = true
+          cluster = {
+            enabled = var.enable_autoscaling_cluster
           }
+
+          workload = {
+            enabled = var.enable_autoscaling_workload
+          }
+        }
+
+        clusterChecks = {
+          useClusterChecksRunners = var.enable_cluster_checks_runners
         }
 
         cspm = {
@@ -68,8 +76,20 @@ resource "kubernetes_manifest" "agent" {
           }
         }
 
+        ebpfCheck = {
+          enabled = var.enable_ebpf_check
+        }
+
         externalMetricsServer = {
           enabled = var.enable_external_metrics_server
+        }
+
+        helmCheck = {
+          enabled = var.enable_helm_check
+        }
+
+        liveProcessCollection = {
+          enabled = var.enable_live_process_collection
         }
 
         logCollection = {
@@ -81,8 +101,34 @@ resource "kubernetes_manifest" "agent" {
           enabled = var.enable_npm
         }
 
+        oomKill = {
+          enabled = var.enable_oom_kill
+        }
+
         orchestratorExplorer = {
           enabled = var.enable_orchestrator_explorer
+        }
+
+        otelCollector = {
+          enabled = var.enable_otel_collector
+        }
+
+        otlp = {
+          receiver = {
+            protocols = {
+              grpc = {
+                enabled = var.enable_otlp_grpc
+              }
+
+              http = {
+                enabled = var.enable_otlp_http
+              }
+            }
+          }
+        }
+
+        prometheusScrape = {
+          enabled = var.enable_prometheus_scrape
         }
 
         sbom = {
@@ -92,6 +138,24 @@ resource "kubernetes_manifest" "agent" {
           }
 
           enabled = var.enable_sbom
+
+          enrichment = {
+            usage = {
+              enabled = var.enable_sbom_enrichment_usage
+            }
+          }
+
+          host = {
+            enabled = var.enable_sbom_host
+          }
+        }
+
+        serviceDiscovery = {
+          enabled = var.enable_service_discovery
+        }
+
+        tcpQueueLength = {
+          enabled = var.enable_tcp_queue_length
         }
 
         usm = {
@@ -112,12 +176,32 @@ resource "kubernetes_manifest" "agent" {
 
       override = {
         clusterAgent = {
+          containers = {
+            "cluster-agent" = {
+              resources = {
+                limits = {
+                  cpu    = var.cluster_agent_limits_cpu
+                  memory = var.cluster_agent_limits_memory
+                }
+
+                requests = {
+                  cpu    = var.cluster_agent_requests_cpu
+                  memory = var.cluster_agent_requests_memory
+                }
+              }
+            }
+          }
+
           env = local.cluster_agent_env_vars_merged
+
+          image = {
+            tag = var.cluster_agent_tag
+          }
 
           labels = {
             "tags.datadoghq.com/env"     = module.core_helpers.environment
             "tags.datadoghq.com/service" = "datadog-cluster-agent"
-            "tags.datadoghq.com/version" = var.node_agent_tag
+            "tags.datadoghq.com/version" = var.cluster_agent_tag
           }
         }
 
@@ -193,6 +277,27 @@ resource "kubernetes_manifest" "agent" {
         }
       }
     }
+  }
+}
+
+check "apm_instrumentation_requires_apm" {
+  assert {
+    condition     = !var.enable_apm_instrumentation || var.enable_apm
+    error_message = "enable_apm_instrumentation requires enable_apm to be true."
+  }
+}
+
+check "cws_network_requires_cws" {
+  assert {
+    condition     = !var.enable_cws_network_detection || var.enable_cws
+    error_message = "enable_cws_network_detection requires enable_cws to be true."
+  }
+}
+
+check "sbom_enrichment_requires_sbom" {
+  assert {
+    condition     = !var.enable_sbom_enrichment_usage || var.enable_sbom
+    error_message = "enable_sbom_enrichment_usage requires enable_sbom to be true."
   }
 }
 
