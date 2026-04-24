@@ -56,7 +56,7 @@ resource "kubernetes_manifest" "agent" {
           }
 
           workload = {
-            enabled = var.enable_autoscaling_workload
+            enabled = true
           }
         }
 
@@ -65,14 +65,14 @@ resource "kubernetes_manifest" "agent" {
         }
 
         cspm = {
-          enabled = var.enable_cspm
+          enabled = true
         }
 
         cws = {
-          enabled = var.enable_cws
+          enabled = true
 
           network = {
-            enabled = var.enable_cws_network_detection
+            enabled = true
           }
         }
 
@@ -81,7 +81,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         externalMetricsServer = {
-          enabled = var.enable_external_metrics_server
+          enabled = true
         }
 
         helmCheck = {
@@ -93,12 +93,12 @@ resource "kubernetes_manifest" "agent" {
         }
 
         logCollection = {
-          containerCollectAll = var.enable_container_collect_all
-          enabled             = var.enable_log_collection
+          containerCollectAll = true
+          enabled             = true
         }
 
         npm = {
-          enabled = var.enable_npm
+          enabled = true
         }
 
         oomKill = {
@@ -106,7 +106,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         orchestratorExplorer = {
-          enabled = var.enable_orchestrator_explorer
+          enabled = true
         }
 
         otelCollector = {
@@ -133,11 +133,11 @@ resource "kubernetes_manifest" "agent" {
 
         sbom = {
           containerImage = {
-            enabled                   = var.enable_sbom
+            enabled                   = true
             uncompressedLayersSupport = true
           }
 
-          enabled = var.enable_sbom
+          enabled = true
 
           enrichment = {
             usage = {
@@ -146,7 +146,7 @@ resource "kubernetes_manifest" "agent" {
           }
 
           host = {
-            enabled = var.enable_sbom_host
+            enabled = true
           }
         }
 
@@ -284,20 +284,6 @@ check "apm_instrumentation_requires_apm" {
   assert {
     condition     = !var.enable_apm_instrumentation || var.enable_apm
     error_message = "enable_apm_instrumentation requires enable_apm to be true."
-  }
-}
-
-check "cws_network_requires_cws" {
-  assert {
-    condition     = !var.enable_cws_network_detection || var.enable_cws
-    error_message = "enable_cws_network_detection requires enable_cws to be true."
-  }
-}
-
-check "sbom_enrichment_requires_sbom" {
-  assert {
-    condition     = !var.enable_sbom_enrichment_usage || var.enable_sbom
-    error_message = "enable_sbom_enrichment_usage requires enable_sbom to be true."
   }
 }
 

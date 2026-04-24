@@ -11,7 +11,22 @@ This repo contains two distinct OpenTofu modules — each has its own variables,
 | `regional/` | Deploys the Datadog Operator Helm chart into the cluster |
 | `regional/manifests/` | Deploys the `DatadogAgent` CRD that configures the agent |
 
-All feature toggles (`enable_*`) live in `regional/manifests/variables.tofu` and are wired into `kubernetes_manifest.agent` in `regional/manifests/main.tofu`.
+Optional feature toggles (`enable_*`) live in `regional/manifests/variables.tofu`. Platform invariants are hardcoded directly in `regional/manifests/main.tofu`.
+
+## Platform Invariants
+
+These features are **always enabled** — they are hardcoded `true` in `main.tofu` and have no corresponding variable. Do not add variables for these; they represent the non-negotiable observability and security baseline.
+
+| Feature (CRD field) | Rationale | Cost signal |
+|---|---|---|
+| `logCollection.enabled` + `containerCollectAll` | Can't operate without logs | Log Management billing |
+| `orchestratorExplorer` | Core K8s pod/deployment visibility | Included |
+| `externalMetricsServer` | Required for HPA on custom/external metrics | Included |
+| `autoscaling.workload` | Core platform autoscaling | Included |
+| `npm` | Network visibility for inter-service debugging | $5/host/month |
+| `sbom` + `sbom.containerImage` + `sbom.host` | Container and host vulnerability scanning | CSM Pro ($10/host/month) |
+| `cspm` | Cloud Security Posture Management | CSM Pro (same SKU as SBOM) |
+| `cws` + `cws.network` | Runtime threat detection via eBPF | Workload Protection ($15/host/month) |
 
 ## Version Locations
 
@@ -30,10 +45,13 @@ Finding latest versions:
 
 ## Adding a New Agent Feature
 
+For optional features (team or cluster decides):
 1. Add an `enable_*` variable to `regional/manifests/variables.tofu`. Include pricing if the feature has a cost (see *Datadog Pricing* section below).
 2. Add the feature block inside `spec.features` in `regional/manifests/main.tofu`.
-3. If the feature has a hard prerequisite on another feature, add a `check` block at the bottom of `main.tofu` and document it in the *Feature Dependency Rules* table below.
+3. If the feature has a hard prerequisite on another variable-driven feature, add a `check` block at the bottom of `main.tofu` and document it in the *Feature Dependency Rules* table below.
 4. If the new `check` block would fire with default values, update the test fixture at `tests/fixtures/default/regional/manifests/main.tofu`.
+
+For invariant features (always on, no opt-out): hardcode `true` directly in `main.tofu` — do not add a variable.
 
 ## Feature Dependency Rules
 
@@ -42,14 +60,12 @@ These cross-variable constraints are enforced via `check` blocks at the bottom o
 | Dependent feature | Requires |
 |---|---|
 | `enable_apm_instrumentation` | `enable_apm = true` |
-| `enable_cws_network_detection` | `enable_cws = true` |
-| `enable_sbom_enrichment_usage` | `enable_sbom = true` |
 
-Keep this table and the `check` blocks in sync when adding new dependencies.
+Keep this table and the `check` blocks in sync when adding new dependencies. Note: `cws` and `sbom` are platform invariants — any feature that depends on them needs no check block since they are always on.
 
 ## Datadog Pricing in Variable Descriptions
 
-Many variables in `regional/manifests/variables.tofu` include pricing from https://www.datadoghq.com/pricing/ to help operators understand cost impact. Datadog revises pricing periodically. When modifying or adding feature variables:
+Optional variables in `regional/manifests/variables.tofu` include pricing from https://www.datadoghq.com/pricing/. Datadog revises pricing periodically. When modifying or adding feature variables:
 
 1. Verify the current price at https://www.datadoghq.com/pricing/ for the relevant product.
 2. Capture both the **annual** and **on-demand** rates, and any prerequisite products.
@@ -59,11 +75,7 @@ Many variables in `regional/manifests/variables.tofu` include pricing from https
 |---|---|
 | `enable_apm`, `enable_apm_instrumentation` | Application Performance Monitoring |
 | `enable_asm_threats`, `enable_asm_iast`, `enable_asm_sca` | App and API Protection |
-| `enable_cspm` | Cloud Security → CSM Pro |
-| `enable_cws`, `enable_cws_network_detection` | Workload Protection / CSM Enterprise |
-| `enable_npm` | Network Monitoring → Cloud Network Monitoring |
-| `enable_usm` | Universal Service Monitoring |
 | `enable_live_process_collection` | Infrastructure (Enterprise tier feature) |
-| `enable_log_collection`, `enable_container_collect_all` | Log Management |
 | `enable_prometheus_scrape` | Infrastructure → Custom Metrics |
-| `enable_sbom`, `enable_sbom_host`, `enable_sbom_enrichment_usage` | Cloud Security → CSM Pro/Enterprise |
+| `enable_sbom_enrichment_usage` | Cloud Security → CSM Pro/Enterprise |
+| `enable_usm` | Universal Service Monitoring |

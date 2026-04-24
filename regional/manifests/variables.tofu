@@ -104,48 +104,8 @@ variable "enable_autoscaling_cluster" {
   default     = false
 }
 
-variable "enable_autoscaling_workload" {
-  description = "Enable workload autoscaling product"
-  type        = bool
-  default     = true
-}
-
 variable "enable_cluster_checks_runners" {
   description = "Enable dedicated cluster checks runner pods to offload cluster-level checks from the cluster agent (recommended for large clusters)"
-  type        = bool
-  default     = false
-}
-
-variable "enable_container_collect_all" {
-  description = "Enable log collection for all containers. Log ingestion and indexing are billed separately under Log Management; see https://www.datadoghq.com/pricing/?product=log-management."
-  type        = bool
-  default     = true
-}
-
-variable "enable_cspm" {
-  description = <<EOF
-    Enable Cloud Security Posture Management (CSPM) via CSM Pro.
-    CSM Pro includes CSPM, KSPM, vulnerability management for containers and hosts, and CIEM.
-    Cost: $10/host/month (annual); $12/host/month on-demand. Standalone — no Infrastructure Monitoring required.
-    CSM Enterprise (adds Workload Protection + file integrity monitoring): $25/host/month (annual), requires Infra Enterprise.
-    Also available bundled in DevSecOps Pro ($22/host) or DevSecOps Enterprise ($34/host).
-    EOF
-  type        = bool
-  default     = false
-}
-
-variable "enable_cws" {
-  description = <<EOF
-    Enable Cloud Workload Security (CWS), now named Workload Protection — runtime threat detection via eBPF.
-    Standalone cost: $15/host/month (annual); $18/host/month on-demand. 4 containers allotted per host.
-    Also included in CSM Enterprise ($25/host/month) and DevSecOps Enterprise ($34/host/month).
-    EOF
-  type        = bool
-  default     = false
-}
-
-variable "enable_cws_network_detection" {
-  description = "Enable Cloud Workload Security (CWS) network detections. Requires enable_cws = true; no additional cost beyond the CWS/Workload Protection license."
   type        = bool
   default     = false
 }
@@ -154,12 +114,6 @@ variable "enable_ebpf_check" {
   description = "Enable the eBPF check for kernel-level observability"
   type        = bool
   default     = false
-}
-
-variable "enable_external_metrics_server" {
-  description = "Enable the External Metrics Server"
-  type        = bool
-  default     = true
 }
 
 variable "enable_helm_check" {
@@ -180,32 +134,10 @@ variable "enable_live_process_collection" {
   default     = false
 }
 
-variable "enable_log_collection" {
-  description = "Enable log collection from the node agent. Log ingestion and indexing are billed separately under Log Management; see https://www.datadoghq.com/pricing/?product=log-management."
-  type        = bool
-  default     = true
-}
-
-variable "enable_npm" {
-  description = <<EOF
-    Enable Cloud Network Monitoring (CNM/NPM) — host-level network traffic visibility using eBPF.
-    Cost: $5/host/month (annual); $7.20/host/month on-demand.
-    Requires Infrastructure Pro or Enterprise on every monitored host.
-    EOF
-  type        = bool
-  default     = true
-}
-
 variable "enable_oom_kill" {
   description = "Enable the OOMKill eBPF-based check to track out-of-memory events"
   type        = bool
   default     = false
-}
-
-variable "enable_orchestrator_explorer" {
-  description = "Enable Orchestrator Explorer"
-  type        = bool
-  default     = true
 }
 
 variable "enable_otel_collector" {
@@ -232,20 +164,8 @@ variable "enable_prometheus_scrape" {
   default     = false
 }
 
-variable "enable_sbom" {
-  description = "Enable Software Bill of Materials (SBOM) for container image vulnerability scanning. Container vulnerability management is included in CSM Pro ($10/host/month annual) and CSM Enterprise ($25/host/month annual)."
-  type        = bool
-  default     = true
-}
-
 variable "enable_sbom_enrichment_usage" {
   description = "Enable SBOM enrichment with runtime package-in-use detection (requires system-probe for eBPF-based file access tracking). No additional cost beyond the CSM Pro/Enterprise license that covers vulnerability management."
-  type        = bool
-  default     = false
-}
-
-variable "enable_sbom_host" {
-  description = "Enable SBOM collection for host packages (OS-level package inventory). Included in CSM Pro ($10/host/month annual) and CSM Enterprise ($25/host/month annual) vulnerability management."
   type        = bool
   default     = false
 }
