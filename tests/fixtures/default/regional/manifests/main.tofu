@@ -19,6 +19,7 @@ module "test_manifests" {
   app_key        = "mock"
   cluster_prefix = "mock"
 
+  enable_apm                 = true
   enable_apm_instrumentation = true
 
   node_agent_tolerations = [

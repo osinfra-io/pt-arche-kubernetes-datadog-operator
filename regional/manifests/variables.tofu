@@ -46,6 +46,12 @@ variable "cluster_agent_requests_memory" {
   default     = "128Mi"
 }
 
+variable "cluster_agent_tag" {
+  description = "Tag for the Datadog cluster agent image"
+  type        = string
+  default     = "7.78.1"
+}
+
 variable "cluster_prefix" {
   description = "Prefix for your cluster name, region, and zone (if applicable) will be added to the end of the cluster name"
   type        = string
@@ -87,6 +93,24 @@ variable "enable_asm_threats" {
   default     = false
 }
 
+variable "enable_autoscaling_cluster" {
+  description = "Enable cluster autoscaling product (requires Cluster Agent 7.74.0+)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_autoscaling_workload" {
+  description = "Enable workload autoscaling product"
+  type        = bool
+  default     = true
+}
+
+variable "enable_cluster_checks_runners" {
+  description = "Enable dedicated cluster checks runner pods to offload cluster-level checks from the cluster agent (recommended for large clusters)"
+  type        = bool
+  default     = false
+}
+
 variable "enable_container_collect_all" {
   description = "Enable log collection for all containers"
   type        = bool
@@ -117,14 +141,32 @@ variable "enable_cws_network_detection" {
   default     = false
 }
 
+variable "enable_ebpf_check" {
+  description = "Enable the eBPF check for kernel-level observability"
+  type        = bool
+  default     = false
+}
+
 variable "enable_external_metrics_server" {
   description = "Enable the External Metrics Server"
   type        = bool
   default     = true
 }
 
+variable "enable_helm_check" {
+  description = "Enable the Helm check to monitor Helm releases in the cluster"
+  type        = bool
+  default     = false
+}
+
 variable "enable_jmx" {
   description = "Whether the Agent image should support JMX"
+  type        = bool
+  default     = false
+}
+
+variable "enable_live_process_collection" {
+  description = "Enable live process monitoring (process details visible in Datadog)"
   type        = bool
   default     = false
 }
@@ -141,16 +183,70 @@ variable "enable_npm" {
   default     = true
 }
 
+variable "enable_oom_kill" {
+  description = "Enable the OOMKill eBPF-based check to track out-of-memory events"
+  type        = bool
+  default     = false
+}
+
 variable "enable_orchestrator_explorer" {
   description = "Enable Orchestrator Explorer"
   type        = bool
   default     = true
 }
 
+variable "enable_otel_collector" {
+  description = "Enable the embedded OpenTelemetry collector in the Agent"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otlp_grpc" {
+  description = "Enable the OTLP/gRPC receiver (port 4317) to ingest OpenTelemetry traces and metrics"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otlp_http" {
+  description = "Enable the OTLP/HTTP receiver (port 4318) to ingest OpenTelemetry traces and metrics"
+  type        = bool
+  default     = false
+}
+
+variable "enable_prometheus_scrape" {
+  description = "Enable Prometheus autodiscovery to scrape pods and services exposing Prometheus metrics"
+  type        = bool
+  default     = false
+}
+
 variable "enable_sbom" {
-  description = "Enable Software Bill of Materials (SBOM)"
+  description = "Enable Software Bill of Materials (SBOM) for container image vulnerability scanning"
   type        = bool
   default     = true
+}
+
+variable "enable_sbom_enrichment_usage" {
+  description = "Enable SBOM enrichment with runtime package-in-use detection (requires system-probe for eBPF-based file access tracking)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_sbom_host" {
+  description = "Enable SBOM collection for host packages"
+  type        = bool
+  default     = false
+}
+
+variable "enable_service_discovery" {
+  description = "Enable the service discovery check"
+  type        = bool
+  default     = false
+}
+
+variable "enable_tcp_queue_length" {
+  description = "Enable the TCP queue length eBPF-based check"
+  type        = bool
+  default     = false
 }
 
 variable "enable_usm" {
@@ -210,7 +306,7 @@ variable "node_agent_requests_memory" {
 variable "node_agent_tag" {
   description = "Tag for the Datadog node agent image"
   type        = string
-  default     = "7.76.2"
+  default     = "7.78.1"
 }
 
 variable "node_agent_tolerations" {
