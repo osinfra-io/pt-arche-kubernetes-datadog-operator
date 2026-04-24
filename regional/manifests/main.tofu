@@ -177,7 +177,7 @@ resource "kubernetes_manifest" "agent" {
       override = {
         clusterAgent = {
           containers = {
-            all = {
+            "cluster-agent" = {
               resources = {
                 limits = {
                   cpu    = var.cluster_agent_limits_cpu
