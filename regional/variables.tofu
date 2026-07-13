@@ -1,12 +1,6 @@
 # Input Variables
 # https://opentofu.org/docs/language/values/variables
 
-variable "agent_namespace" {
-  description = "Namespace for the Datadog Agent"
-  type        = string
-  default     = "datadog"
-}
-
 variable "api_key" {
   description = "Datadog API key"
   type        = string
