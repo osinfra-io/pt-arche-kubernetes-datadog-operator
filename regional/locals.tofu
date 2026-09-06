@@ -16,22 +16,30 @@ locals {
     "appKey" = var.app_key
   }
 
-  helm_values = [
-    for k, v in local.helm_values_map : {
-      name  = k
-      value = v
-    }
-  ]
+  helm_values = {
+    clusterName = local.cluster_name
 
-  helm_values_map = {
-    "clusterName"                              = local.cluster_name
-    "datadogMonitor.enabled"                   = true
-    "podLabels.tags\\.datadoghq\\.com/env"     = module.core_helpers.environment
-    "podLabels.tags\\.datadoghq\\.com/version" = var.operator_version
-    "resources.limits.cpu"                     = var.limits_cpu
-    "resources.limits.memory"                  = var.limits_memory
-    "resources.requests.cpu"                   = var.requests_cpu
-    "resources.requests.memory"                = var.requests_memory
-    "watchNamespaces"                          = join(",", var.watch_namespaces)
+    datadogMonitor = {
+      enabled = true
+    }
+
+    podLabels = {
+      "tags.datadoghq.com/env"     = module.core_helpers.environment
+      "tags.datadoghq.com/version" = var.operator_version
+    }
+
+    resources = {
+      limits = {
+        cpu    = var.limits_cpu
+        memory = var.limits_memory
+      }
+
+      requests = {
+        cpu    = var.requests_cpu
+        memory = var.requests_memory
+      }
+    }
+
+    watchNamespaces = "datadog"
   }
 }

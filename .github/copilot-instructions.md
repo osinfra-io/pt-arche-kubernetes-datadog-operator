@@ -11,7 +11,7 @@ This repo contains two distinct OpenTofu modules — each has its own variables,
 | `regional/` | Deploys the Datadog Operator Helm chart into the cluster |
 | `regional/manifests/` | Deploys the `DatadogAgent` CRD that configures the agent |
 
-Optional feature toggles (`enable_*`) live in `regional/manifests/variables.tofu`. Platform invariants are hardcoded directly in `regional/manifests/main.tofu`.
+Only the variable-driven optional feature toggles (`enable_apm`, `enable_apm_instrumentation`, `enable_usm`) live in `regional/manifests/variables.tofu`. Platform invariants and the currently unsupported-off features are hardcoded directly in `regional/manifests/main.tofu`.
 
 ## Platform Invariants
 
@@ -74,8 +74,4 @@ Optional variables in `regional/manifests/variables.tofu` include pricing from h
 | Variable | Pricing page product |
 |---|---|
 | `enable_apm`, `enable_apm_instrumentation` | Application Performance Monitoring |
-| `enable_asm_threats`, `enable_asm_iast`, `enable_asm_sca` | App and API Protection |
-| `enable_live_process_collection` | Infrastructure (Enterprise tier feature) |
-| `enable_prometheus_scrape` | Infrastructure → Custom Metrics |
-| `enable_sbom_enrichment_usage` | Cloud Security → CSM Pro/Enterprise |
 | `enable_usm` | Universal Service Monitoring |
