@@ -7,14 +7,13 @@ resource "helm_release" "datadog_operator" {
   namespace  = "datadog"
   repository = "https://helm.datadoghq.com"
 
-  set = local.helm_values
-
   set_sensitive = local.helm_sensitive_values
 
   timeout = 900
 
   values = [
-    file("${path.module}/helm/datadog-operator.yml")
+    file("${path.module}/helm/datadog-operator.yml"),
+    yamlencode(local.helm_values)
   ]
 
   version = var.operator_version
