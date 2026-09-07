@@ -38,21 +38,21 @@ resource "kubernetes_manifest" "agent" {
 
         asm = {
           iast = {
-            enabled = false
+            enabled = var.enable_asm_iast
           }
 
           sca = {
-            enabled = false
+            enabled = var.enable_asm_sca
           }
 
           threats = {
-            enabled = false
+            enabled = var.enable_asm_threats
           }
         }
 
         autoscaling = {
           cluster = {
-            enabled = false
+            enabled = var.enable_autoscaling_cluster
           }
 
           workload = {
@@ -61,7 +61,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         clusterChecks = {
-          useClusterChecksRunners = false
+          useClusterChecksRunners = var.enable_cluster_checks_runners
         }
 
         cspm = {
@@ -77,7 +77,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         ebpfCheck = {
-          enabled = false
+          enabled = var.enable_ebpf_check
         }
 
         externalMetricsServer = {
@@ -85,11 +85,11 @@ resource "kubernetes_manifest" "agent" {
         }
 
         helmCheck = {
-          enabled = false
+          enabled = var.enable_helm_check
         }
 
         liveProcessCollection = {
-          enabled = false
+          enabled = var.enable_live_process_collection
         }
 
         logCollection = {
@@ -102,7 +102,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         oomKill = {
-          enabled = false
+          enabled = var.enable_oom_kill
         }
 
         orchestratorExplorer = {
@@ -110,25 +110,25 @@ resource "kubernetes_manifest" "agent" {
         }
 
         otelCollector = {
-          enabled = false
+          enabled = var.enable_otel_collector
         }
 
         otlp = {
           receiver = {
             protocols = {
               grpc = {
-                enabled = false
+                enabled = var.enable_otlp_grpc
               }
 
               http = {
-                enabled = false
+                enabled = var.enable_otlp_http
               }
             }
           }
         }
 
         prometheusScrape = {
-          enabled = false
+          enabled = var.enable_prometheus_scrape
         }
 
         sbom = {
@@ -141,7 +141,7 @@ resource "kubernetes_manifest" "agent" {
 
           enrichment = {
             usage = {
-              enabled = false
+              enabled = var.enable_sbom_enrichment_usage
             }
           }
 
@@ -151,11 +151,11 @@ resource "kubernetes_manifest" "agent" {
         }
 
         serviceDiscovery = {
-          enabled = false
+          enabled = var.enable_service_discovery
         }
 
         tcpQueueLength = {
-          enabled = false
+          enabled = var.enable_tcp_queue_length
         }
 
         usm = {
@@ -261,7 +261,7 @@ resource "kubernetes_manifest" "agent" {
           }
 
           image = {
-            jmxEnabled = false
+            jmxEnabled = var.enable_jmx
             name       = var.node_agent_image
             tag        = var.node_agent_tag
           }

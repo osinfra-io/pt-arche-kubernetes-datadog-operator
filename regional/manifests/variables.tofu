@@ -75,6 +75,113 @@ variable "enable_apm_instrumentation" {
   default     = false
 }
 
+variable "enable_asm_iast" {
+  description = "Enable Interactive Application Security Testing (IAST). Included as part of App and API Protection (enable_asm_threats); no separate cost."
+  type        = bool
+  default     = false
+}
+
+variable "enable_asm_sca" {
+  description = "Enable Software Composition Analysis (SCA). Part of the App and API Protection suite; no separate cost beyond enable_asm_threats."
+  type        = bool
+  default     = false
+}
+
+variable "enable_asm_threats" {
+  description = <<EOF
+    Enable App and API Protection (threat detection and blocking via in-app WAF).
+    Cost: $31/host/month (annual) with Infrastructure Monitoring; $36/host/month standalone.
+    On-demand: $36/host/month. Requires Infrastructure Monitoring.
+    Includes IAST (enable_asm_iast) and SCA (enable_asm_sca) at no extra cost.
+    EOF
+  type        = bool
+  default     = false
+}
+
+variable "enable_autoscaling_cluster" {
+  description = "Enable cluster autoscaling product (requires Cluster Agent 7.74.0+)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cluster_checks_runners" {
+  description = "Enable dedicated cluster checks runner pods to offload cluster-level checks from the cluster agent (recommended for large clusters)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_ebpf_check" {
+  description = "Enable the eBPF check for kernel-level observability"
+  type        = bool
+  default     = false
+}
+
+variable "enable_helm_check" {
+  description = "Enable the Helm check to monitor Helm releases in the cluster"
+  type        = bool
+  default     = false
+}
+
+variable "enable_jmx" {
+  description = "Whether the Agent image should support JMX"
+  type        = bool
+  default     = false
+}
+
+variable "enable_live_process_collection" {
+  description = "Enable live process monitoring (process details visible in Datadog). Included in Infrastructure Enterprise ($23/host/month annual); not available on Infrastructure Pro ($15/host/month). No separate SKU cost."
+  type        = bool
+  default     = false
+}
+
+variable "enable_oom_kill" {
+  description = "Enable the OOMKill eBPF-based check to track out-of-memory events"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otel_collector" {
+  description = "Enable the embedded OpenTelemetry collector in the Agent"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otlp_grpc" {
+  description = "Enable the OTLP/gRPC receiver (port 4317) to ingest OpenTelemetry traces and metrics"
+  type        = bool
+  default     = false
+}
+
+variable "enable_otlp_http" {
+  description = "Enable the OTLP/HTTP receiver (port 4318) to ingest OpenTelemetry traces and metrics"
+  type        = bool
+  default     = false
+}
+
+variable "enable_prometheus_scrape" {
+  description = "Enable Prometheus autodiscovery to scrape pods and services exposing Prometheus metrics. Scraped metrics count as custom metrics; Infrastructure Pro allots 100 custom metrics/host, Enterprise allots 200/host. Additional custom metrics cost ~$1/100 metrics/month."
+  type        = bool
+  default     = false
+}
+
+variable "enable_sbom_enrichment_usage" {
+  description = "Enable SBOM enrichment with runtime package-in-use detection (requires system-probe for eBPF-based file access tracking). No additional cost beyond the CSM Pro/Enterprise license that covers vulnerability management."
+  type        = bool
+  default     = false
+}
+
+variable "enable_service_discovery" {
+  description = "Enable the service discovery check"
+  type        = bool
+  default     = false
+}
+
+variable "enable_tcp_queue_length" {
+  description = "Enable the TCP queue length eBPF-based check"
+  type        = bool
+  default     = false
+}
+
 variable "enable_usm" {
   description = <<EOF
     Enable Universal Service Monitoring (USM) — automatic service discovery and RED metrics via eBPF, no code changes required.

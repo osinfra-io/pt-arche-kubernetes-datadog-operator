@@ -40,6 +40,6 @@ locals {
       }
     }
 
-    watchNamespaces = "datadog"
+    watchNamespaces = join(",", var.watch_namespaces)
   }
 }

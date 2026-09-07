@@ -47,3 +47,9 @@ variable "requests_memory" {
   type        = string
   default     = "32Mi"
 }
+
+variable "watch_namespaces" {
+  description = "Restricts the Operator to watch its managed resources on specific namespaces - set to [\"\"] to watch all namespaces"
+  type        = list(string)
+  default     = ["datadog"]
+}
