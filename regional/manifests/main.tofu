@@ -247,6 +247,19 @@ resource "kubernetes_manifest" "agent" {
                 - agent_endpoint: http://%%host%%:9990/metrics
                   use_openmetrics: true
               EOF
+
+              # Matches the proxyv2 image, which in an ambient mesh is only the Istio ingress and
+              # east-west gateways — ambient has no sidecars, so this no longer attaches to
+              # application pods. Without it the gateways are identified by their image name.
+              "envoy.yaml" = <<-EOF
+              ad_identifiers:
+                - proxyv2
+              init_config:
+              instances:
+                - openmetrics_endpoint: http://%%host%%:15020/stats/prometheus
+              logs:
+                - source: envoy
+              EOF
             }
           }
 
