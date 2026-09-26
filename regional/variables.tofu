@@ -33,7 +33,7 @@ variable "limits_memory" {
 variable "operator_version" {
   description = "The version of the Datadog Operator to install"
   type        = string
-  default     = "2.28.0"
+  default     = "2.27.0"
 }
 
 variable "requests_cpu" {
