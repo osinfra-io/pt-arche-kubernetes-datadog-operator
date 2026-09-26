@@ -21,4 +21,14 @@ run "default_manifests" {
   module {
     source = "./tests/fixtures/default/regional/manifests"
   }
+
+  assert {
+    condition = alltrue([
+      output.node_agent_container_resources["agent"].requests.cpu == "100m",
+      output.node_agent_container_resources["agent"].limits.memory == "512Mi",
+      output.node_agent_container_resources["system-probe"].requests.memory == "640Mi",
+      output.node_agent_container_resources["system-probe"].limits.memory == "768Mi"
+    ])
+    error_message = "Node Agent resource overrides must be attached to their named containers."
+  }
 }

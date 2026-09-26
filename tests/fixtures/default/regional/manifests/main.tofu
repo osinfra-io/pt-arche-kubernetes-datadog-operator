@@ -22,6 +22,30 @@ module "test_manifests" {
   enable_apm                 = true
   enable_apm_instrumentation = true
 
+  node_agent_container_resources = {
+    agent = {
+      limits = {
+        cpu    = "500m"
+        memory = "512Mi"
+      }
+      requests = {
+        cpu    = "100m"
+        memory = "256Mi"
+      }
+    }
+
+    "system-probe" = {
+      limits = {
+        cpu    = "500m"
+        memory = "768Mi"
+      }
+      requests = {
+        cpu    = "100m"
+        memory = "640Mi"
+      }
+    }
+  }
+
   node_agent_tolerations = [
     {
       effect   = "NoExecute"

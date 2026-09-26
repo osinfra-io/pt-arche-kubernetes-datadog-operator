@@ -204,40 +204,25 @@ variable "node_agent_env_dd_ignore_auto_conf" {
   default     = ""
 }
 
+variable "node_agent_container_resources" {
+  description = "Optional resource requests and limits for specific Datadog Node Agent containers, keyed by container name"
+  type = map(object({
+    limits   = map(string)
+    requests = map(string)
+  }))
+  default = {}
+}
+
 variable "node_agent_image" {
   description = "Image for the Datadog node agent, relative to datadog"
   type        = string
   default     = "agent"
 }
 
-variable "node_agent_limits_cpu" {
-  description = "CPU limits for the Datadog Node Agent"
-  type        = string
-  default     = "200m"
-}
-
-variable "node_agent_limits_memory" {
-  description = "Memory limits for the Datadog Node Agent"
-  type        = string
-  default     = "256Mi"
-}
-
 variable "node_agent_log_level" {
   description = "Node Agent log level"
   type        = string
   default     = "info"
-}
-
-variable "node_agent_requests_cpu" {
-  description = "CPU requests for the Datadog Node Agent"
-  type        = string
-  default     = "100m"
-}
-
-variable "node_agent_requests_memory" {
-  description = "Memory requests for the Datadog Node Agent"
-  type        = string
-  default     = "128Mi"
 }
 
 variable "node_agent_tag" {
