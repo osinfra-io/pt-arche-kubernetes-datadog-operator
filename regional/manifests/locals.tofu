@@ -198,6 +198,32 @@ locals {
     }
   ]
 
+  node_agent_container_overrides_base = {
+    agent = {
+      logLevel = var.node_agent_log_level
+    }
+
+    "trace-agent" = {
+      env = local.trace_agent_env_vars
+    }
+  }
+
+  node_agent_container_overrides = merge(
+    local.node_agent_container_overrides_base,
+    {
+      for name, resources in var.node_agent_container_resources :
+      name => merge(
+        lookup(local.node_agent_container_overrides_base, name, {}),
+        {
+          resources = merge(
+            resources.limits != null ? { limits = resources.limits } : {},
+            resources.requests != null ? { requests = resources.requests } : {},
+          )
+        }
+      )
+    }
+  )
+
   registry = "${var.registry}/datadog"
 
   tags = [

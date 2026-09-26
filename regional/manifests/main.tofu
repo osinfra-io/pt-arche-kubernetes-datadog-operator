@@ -206,34 +206,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         nodeAgent = {
-          containers = {
-            agent = {
-              logLevel = var.node_agent_log_level
-            }
-
-            all = {
-              resources = {
-
-                # Currently it's not ideal how we have to set the resources for the various components.
-                # Looking into support at the workload level for setting resources:
-                # https://github.com/DataDog/datadog-operator/issues/1408
-
-                limits = {
-                  cpu    = var.node_agent_limits_cpu
-                  memory = var.node_agent_limits_memory
-                }
-
-                requests = {
-                  cpu    = var.node_agent_requests_cpu
-                  memory = var.node_agent_requests_memory
-                }
-              }
-            }
-
-            trace-agent = {
-              env = local.trace_agent_env_vars
-            }
-          }
+          containers = local.node_agent_container_overrides
 
           env = local.node_agent_env_vars
 
@@ -246,6 +219,19 @@ resource "kubernetes_manifest" "agent" {
               instances:
                 - agent_endpoint: http://%%host%%:9990/metrics
                   use_openmetrics: true
+              EOF
+
+              # Matches the proxyv2 image, which in an ambient mesh is only the Istio ingress and
+              # east-west gateways — ambient has no sidecars, so this no longer attaches to
+              # application pods. Without it the gateways are identified by their image name.
+              "envoy.yaml" = <<-EOF
+              ad_identifiers:
+                - proxyv2
+              init_config:
+              instances:
+                - openmetrics_endpoint: http://%%host%%:15020/stats/prometheus
+              logs:
+                - source: envoy
               EOF
             }
           }
