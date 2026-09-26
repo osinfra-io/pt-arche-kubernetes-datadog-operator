@@ -34,11 +34,13 @@ module "test_manifests" {
       }
     }
 
-    "system-probe" = {
+    process-agent = {
       limits = {
-        cpu    = "500m"
-        memory = "768Mi"
+        memory = "128Mi"
       }
+    }
+
+    "system-probe" = {
       requests = {
         cpu    = "100m"
         memory = "640Mi"

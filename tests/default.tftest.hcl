@@ -26,9 +26,11 @@ run "default_manifests" {
     condition = alltrue([
       output.node_agent_container_resources["agent"].requests.cpu == "100m",
       output.node_agent_container_resources["agent"].limits.memory == "512Mi",
+      output.node_agent_container_resources["process-agent"].limits.memory == "128Mi",
+      !contains(keys(output.node_agent_container_resources["process-agent"]), "requests"),
       output.node_agent_container_resources["system-probe"].requests.memory == "640Mi",
-      output.node_agent_container_resources["system-probe"].limits.memory == "768Mi"
+      !contains(keys(output.node_agent_container_resources["system-probe"]), "limits")
     ])
-    error_message = "Node Agent resource overrides must be attached to their named containers."
+    error_message = "Node Agent resource overrides must support complete and one-sided resource configurations."
   }
 }

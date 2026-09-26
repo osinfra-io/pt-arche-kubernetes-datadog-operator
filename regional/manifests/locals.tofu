@@ -214,7 +214,12 @@ locals {
       for name, resources in var.node_agent_container_resources :
       name => merge(
         lookup(local.node_agent_container_overrides_base, name, {}),
-        { resources = resources }
+        {
+          resources = merge(
+            resources.limits != null ? { limits = resources.limits } : {},
+            resources.requests != null ? { requests = resources.requests } : {},
+          )
+        }
       )
     }
   )

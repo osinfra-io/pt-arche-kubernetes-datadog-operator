@@ -207,8 +207,8 @@ variable "node_agent_env_dd_ignore_auto_conf" {
 variable "node_agent_container_resources" {
   description = "Optional resource requests and limits for specific Datadog Node Agent containers, keyed by container name"
   type = map(object({
-    limits   = map(string)
-    requests = map(string)
+    limits   = optional(map(string))
+    requests = optional(map(string))
   }))
   default = {}
 }
