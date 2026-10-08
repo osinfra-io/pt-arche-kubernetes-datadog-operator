@@ -8,7 +8,7 @@ Reusable OpenTofu child module for the Datadog Kubernetes Operator on Google Kub
 
 ## 🔩 Usage
 
-The repository root is not a consumable module. The operator watches only the `datadog` namespace by default; use `[""]` only when cluster-wide watching is intended. The manifests module enables log collection, orchestrator explorer, external metrics, workload autoscaling, network monitoring, CSPM, runtime security, and host/container SBOM collection as platform invariants. Universal Service Monitoring also defaults to enabled; APM, application security, Prometheus scraping, live processes, and most other optional features default to disabled. Many enabled and optional features are separately licensed or increase log, metric, trace, and security ingestion, so review current Datadog pricing before deployment. API and application keys are sensitive and are stored in a Kubernetes Secret, the `DatadogAgent` resource, and OpenTofu state. Restrict read access to all three resources.
+Deploy `//regional` before `//regional/manifests`; the repository root is not a consumable module. The operator watches only `datadog` by default; `[""]` enables cluster-wide watching. Enabled monitoring and security features may require separate licenses and increase ingestion costs. Restrict read access to API/application keys in Kubernetes Secrets, the `DatadogAgent` resource, and OpenTofu state.
 
 > [!TIP]
 > You can check the [tests/fixtures](tests/fixtures) directory for example configurations. These fixtures set up the system for testing by providing all the necessary initial code, thus creating good examples on which to base your configurations.
