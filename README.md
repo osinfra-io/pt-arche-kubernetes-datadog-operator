@@ -10,6 +10,8 @@ Reusable OpenTofu child module for the Datadog Kubernetes Operator on Google Kub
 
 Deploy `//regional` before `//regional/manifests`; the repository root is not a consumable module. The operator watches only `datadog` by default; `[""]` enables cluster-wide watching. Enabled monitoring and security features may require separate licenses and increase ingestion costs. Restrict read access to API/application keys in Kubernetes Secrets, the `DatadogAgent` resource, and OpenTofu state.
 
+Prometheus annotation scraping is enabled by default and applies cluster-wide, including to ztunnel pods. Scraped metrics count as custom metrics and can increase ingestion costs; set `enable_prometheus_scrape = false` when this collection is not wanted. Ztunnel logs use the `ztunnel` source and `istio-ztunnel` service.
+
 > [!TIP]
 > You can check the [tests/fixtures](tests/fixtures) directory for example configurations. These fixtures set up the system for testing by providing all the necessary initial code, thus creating good examples on which to base your configurations.
 
