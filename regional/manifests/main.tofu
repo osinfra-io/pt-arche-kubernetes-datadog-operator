@@ -233,6 +233,14 @@ resource "kubernetes_manifest" "agent" {
               logs:
                 - source: envoy
               EOF
+
+              "ztunnel.yaml" = <<-EOF
+              ad_identifiers:
+                - ztunnel
+              logs:
+                - source: ztunnel
+                  service: istio-ztunnel
+              EOF
             }
           }
 

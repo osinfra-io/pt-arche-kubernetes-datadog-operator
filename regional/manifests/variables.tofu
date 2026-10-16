@@ -159,9 +159,9 @@ variable "enable_otlp_http" {
 }
 
 variable "enable_prometheus_scrape" {
-  description = "Enable Prometheus autodiscovery to scrape pods and services exposing Prometheus metrics. Scraped metrics count as custom metrics; Infrastructure Pro allots 100 custom metrics/host, Enterprise allots 200/host. Additional custom metrics cost ~$1/100 metrics/month."
+  description = "Enable cluster-wide Prometheus autodiscovery for annotated pods and services, including ztunnel. Scraped metrics count as custom metrics; Infrastructure Pro allots 100 custom metrics/host, Enterprise allots 200/host. Additional custom metrics cost ~$1/100 metrics/month."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_sbom_enrichment_usage" {

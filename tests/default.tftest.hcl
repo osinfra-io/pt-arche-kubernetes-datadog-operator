@@ -33,4 +33,14 @@ run "default_manifests" {
     ])
     error_message = "Node Agent resource overrides must support complete and one-sided resource configurations."
   }
+
+  assert {
+    condition = output.prometheus_scrape_enabled && alltrue([
+      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "ad_identifiers:"),
+      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "- ztunnel"),
+      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "source: ztunnel"),
+      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "service: istio-ztunnel")
+    ])
+    error_message = "Prometheus annotation scraping must be enabled, and ztunnel logs must use the ztunnel source."
+  }
 }
