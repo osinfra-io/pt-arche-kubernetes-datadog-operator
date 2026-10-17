@@ -187,27 +187,6 @@ locals {
     }
   }
 
-  node_agent_env_vars = [
-    {
-      name  = "DD_CONTAINER_EXCLUDE"
-      value = "kube_namespace:^gke-managed-cim$ kube_namespace:^gke-managed-system kube_namespace:^gke-mcs$ kube_namespace:^gmp-system$ kube_namespace:^kube-node-lease$ kube_namespace:^kube-public$ kube_namespace:^kube-system$ ${var.node_agent_env_dd_container_exclude}"
-    },
-    {
-      name  = "DD_IGNORE_AUTOCONF"
-      value = "cilium ${var.node_agent_env_dd_ignore_auto_conf}"
-    }
-  ]
-
-  node_agent_container_overrides_base = {
-    agent = {
-      logLevel = var.node_agent_log_level
-    }
-
-    "trace-agent" = {
-      env = local.trace_agent_env_vars
-    }
-  }
-
   node_agent_container_overrides = merge(
     local.node_agent_container_overrides_base,
     {
@@ -223,6 +202,32 @@ locals {
       )
     }
   )
+
+  node_agent_container_overrides_base = {
+    agent = {
+      logLevel = var.node_agent_log_level
+    }
+
+    "trace-agent" = {
+      env = local.trace_agent_env_vars
+    }
+  }
+
+  node_agent_container_resources = {
+    for name, override in local.node_agent_container_overrides :
+    name => lookup(override, "resources", null)
+  }
+
+  node_agent_env_vars = [
+    {
+      name  = "DD_CONTAINER_EXCLUDE"
+      value = "kube_namespace:^gke-managed-cim$ kube_namespace:^gke-managed-system kube_namespace:^gke-mcs$ kube_namespace:^gmp-system$ kube_namespace:^kube-node-lease$ kube_namespace:^kube-public$ kube_namespace:^kube-system$ ${var.node_agent_env_dd_container_exclude}"
+    },
+    {
+      name  = "DD_IGNORE_AUTOCONF"
+      value = "cilium ${var.node_agent_env_dd_ignore_auto_conf}"
+    }
+  ]
 
   registry = "${var.registry}/datadog"
 
