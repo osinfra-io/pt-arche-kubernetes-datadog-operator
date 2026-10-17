@@ -192,6 +192,15 @@ variable "enable_usm" {
   default     = true
 }
 
+variable "node_agent_container_resources" {
+  description = "Optional resource requests and limits for specific Datadog Node Agent containers, keyed by container name"
+  type = map(object({
+    limits   = optional(map(string))
+    requests = optional(map(string))
+  }))
+  default = {}
+}
+
 variable "node_agent_env_dd_container_exclude" {
   description = "Environment variable for the Datadog node agent to exclude containers"
   type        = string
@@ -202,15 +211,6 @@ variable "node_agent_env_dd_ignore_auto_conf" {
   description = "Environment variable for the Datadog node agent to ignore auto configuration"
   type        = string
   default     = ""
-}
-
-variable "node_agent_container_resources" {
-  description = "Optional resource requests and limits for specific Datadog Node Agent containers, keyed by container name"
-  type = map(object({
-    limits   = optional(map(string))
-    requests = optional(map(string))
-  }))
-  default = {}
 }
 
 variable "node_agent_image" {
