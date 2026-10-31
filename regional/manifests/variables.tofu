@@ -49,7 +49,7 @@ variable "cluster_agent_requests_memory" {
 variable "cluster_agent_tag" {
   description = "Tag for the Datadog cluster agent image"
   type        = string
-  default     = "7.84.3"
+  default     = "7.85.0"
 }
 
 variable "cluster_prefix" {
@@ -228,7 +228,7 @@ variable "node_agent_log_level" {
 variable "node_agent_tag" {
   description = "Tag for the Datadog node agent image"
   type        = string
-  default     = "7.84.3"
+  default     = "7.85.0"
 }
 
 variable "node_agent_tolerations" {
