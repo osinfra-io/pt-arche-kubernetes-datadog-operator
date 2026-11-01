@@ -31,9 +31,9 @@ variable "limits_memory" {
 }
 
 variable "operator_version" {
-  description = "The version of the Datadog Operator to install"
+  description = "The version of the Datadog Operator Helm chart to install"
   type        = string
-  default     = "2.32.0"
+  default     = "2.31.0"
 }
 
 variable "requests_cpu" {
