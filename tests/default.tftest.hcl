@@ -44,3 +44,39 @@ run "default_manifests" {
     error_message = "Prometheus annotation scraping must be enabled, and ztunnel logs must use the ztunnel source."
   }
 }
+
+run "monitor_thresholds" {
+  command = plan
+
+  module {
+    source = "./regional/manifests"
+  }
+
+  variables {
+    api_key        = "mock"
+    app_key        = "mock"
+    cluster_prefix = "mock"
+    registry       = "mock-docker.pkg.dev/mock-project/mock-virtual"
+    team           = "mock-team"
+  }
+
+  assert {
+    condition = alltrue([
+      for name in ["crash-loop-backoff", "failing-deployment-replicas", "failing-statefulset-replicas", "image-pull-backoff"] :
+      !contains(keys(kubernetes_manifest.kubernetes_monitor_templates[name].manifest.spec.options.thresholds), "warning")
+    ])
+    error_message = "Monitors without warning alerts must omit the warning threshold rather than send null to Kubernetes."
+  }
+
+  assert {
+    condition = alltrue([
+      for name, monitor in kubernetes_manifest.kubernetes_monitor_templates :
+      monitor.manifest.spec.options.thresholds.critical == local.kubernetes_monitor_templates[name].thresholds_critical &&
+      (
+        local.kubernetes_monitor_templates[name].thresholds_warning == null ||
+        try(monitor.manifest.spec.options.thresholds.warning == local.kubernetes_monitor_templates[name].thresholds_warning, false)
+      )
+    ])
+    error_message = "Configured critical and warning thresholds must remain unchanged."
+  }
+}

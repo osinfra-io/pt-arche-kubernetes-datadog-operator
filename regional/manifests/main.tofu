@@ -290,10 +290,7 @@ resource "kubernetes_manifest" "kubernetes_monitor_templates" {
       options = {
         notifyNoData = false
 
-        thresholds = {
-          critical = each.value.thresholds_critical
-          warning  = each.value.thresholds_warning
-        }
+        thresholds = local.kubernetes_monitor_thresholds[each.key]
       }
 
       priority = each.value.priority
