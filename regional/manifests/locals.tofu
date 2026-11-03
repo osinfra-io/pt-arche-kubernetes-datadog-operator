@@ -187,6 +187,15 @@ locals {
     }
   }
 
+  kubernetes_monitor_thresholds = {
+    for name, monitor in local.kubernetes_monitor_templates : name => {
+      for threshold, value in {
+        critical = monitor.thresholds_critical
+        warning  = monitor.thresholds_warning
+      } : threshold => value if value != null
+    }
+  }
+
   node_agent_container_overrides = merge(
     local.node_agent_container_overrides_base,
     {
