@@ -36,12 +36,13 @@ run "default_manifests" {
 
   assert {
     condition = output.prometheus_scrape_enabled && alltrue([
-      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "ad_identifiers:"),
-      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "- ztunnel"),
-      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "source: ztunnel"),
-      strcontains(output.node_agent_extra_confd_config_data["ztunnel.yaml"], "service: istio-ztunnel")
+      !contains(keys(output.node_agent_extra_confd_config_data), "ztunnel.yaml"),
+      !contains(keys(yamldecode(output.node_agent_extra_confd_config_data["envoy.yaml"])), "logs"),
+      strcontains(output.node_agent_extra_confd_config_data["gatekeeper.yaml"], "- gatekeeper"),
+      strcontains(output.node_agent_extra_confd_config_data["gatekeeper.yaml"], "gatekeeper_health_endpoint: http://%%host%%:9090"),
+      strcontains(output.node_agent_extra_confd_config_data["gatekeeper.yaml"], "prometheus_url: http://%%host%%:8888/metrics")
     ])
-    error_message = "Prometheus annotation scraping must be enabled, and ztunnel logs must use the ztunnel source."
+    error_message = "Prometheus scraping and Gatekeeper health and metrics endpoints must be configured without conflicting Istio log configurations."
   }
 }
 
