@@ -10,8 +10,22 @@ permissions:
   id-token: write
 
 jobs:
+  build_agent:
+    name: Build custom Datadog Agent
+    uses: osinfra-io/pt-techne-misc-workflows/.github/workflows/build-and-push.yml@08a1f8d55cb21e733dc36c5abe3cb0b277114697  # v0.2.9
+    with:
+      cache_from: type=gha
+      cache_to: type=gha,mode=max
+      context: images/agent-integrations-extra
+      file: images/agent-integrations-extra/Dockerfile
+      registry: us-docker.pkg.dev
+      service_account: arche-datadog-image@pt-corpus-tf16-prod.iam.gserviceaccount.com
+      tags: us-docker.pkg.dev/pt-corpus-tf16-prod/pt-pneuma-standard/datadog/agent-integrations-extra:${{ github.ref_name }}
+      workload_identity_provider: projects/557265520053/locations/global/workloadIdentityPools/github-actions/providers/github-actions-oidc
+
   release:
     name: Release
+    needs: build_agent
     uses: osinfra-io/pt-techne-misc-workflows/.github/workflows/release.yml@08a1f8d55cb21e733dc36c5abe3cb0b277114697  # v0.2.9
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
