@@ -13,6 +13,24 @@ permissions:
   contents: read
 
 jobs:
+  agent_image:
+    name: Build custom Datadog Agent
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003  # v4.4.0
+
+      - name: Build image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
+        with:
+          context: images/agent-integrations-extra
+          file: images/agent-integrations-extra/Dockerfile
+          push: false
+
   tests:
     name: Tests
     uses: osinfra-io/pt-techne-opentofu-workflows/.github/workflows/test.yml@e37130a8cea1e747b73a9d325eb4f8f209c0e95d # v0.7.1

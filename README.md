@@ -41,7 +41,7 @@ tofu test
 
 ## 📦 Release
 
-To release a new version, simply push a new tag to the repository. The tag should be in the format `vX.Y.Z` where `X`, `Y`, and `Z` are integers.
+To release a new version, push a tag in the format `vX.Y.Z` where `X`, `Y`, and `Z` are integers. The release workflow first builds and publishes the custom Datadog Agent image, including the Gatekeeper integration, as `pt-pneuma-standard/datadog/agent-integrations-extra` with the release tag. The GitHub release is created only after the image is published. Pneuma must select the same image tag when updating this module.
 
 ```none
 git tag vX.Y.Z
