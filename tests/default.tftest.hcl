@@ -62,6 +62,11 @@ run "monitor_thresholds" {
   }
 
   assert {
+    condition     = kubernetes_manifest.agent.manifest.spec.override.nodeAgent.containers.agent.logLevel == "warn"
+    error_message = "The Node Agent must default to warning-level logging."
+  }
+
+  assert {
     condition = alltrue([
       for name in ["crash-loop-backoff", "failing-deployment-replicas", "failing-statefulset-replicas", "image-pull-backoff"] :
       !contains(keys(kubernetes_manifest.kubernetes_monitor_templates[name].manifest.spec.options.thresholds), "warning")
