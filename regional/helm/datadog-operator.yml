@@ -6,5 +6,7 @@ remoteConfiguration:
 apiKeyExistingSecret: datadog-operator-secret
 appKeyExistingSecret: datadog-operator-secret
 
+logLevel: warn
+
 podLabels:
   tags.datadoghq.com/service: datadog-operator
