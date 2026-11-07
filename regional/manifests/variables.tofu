@@ -222,7 +222,7 @@ variable "node_agent_image" {
 variable "node_agent_log_level" {
   description = "Node Agent log level"
   type        = string
-  default     = "info"
+  default     = "warn"
 }
 
 variable "node_agent_tag" {
