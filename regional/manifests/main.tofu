@@ -172,6 +172,7 @@ resource "kubernetes_manifest" "agent" {
         }
 
         registry = local.registry
+        tags     = local.tags
       }
 
       override = {

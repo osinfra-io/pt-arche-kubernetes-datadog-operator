@@ -15,6 +15,39 @@ run "default_regional" {
   }
 }
 
+run "operator_unified_tags" {
+  command = plan
+
+  module {
+    source = "./regional"
+  }
+
+  override_module {
+    target = module.core_helpers
+    outputs = {
+      env         = "prod"
+      environment = "production"
+      region      = "us-east1"
+      zone        = "b"
+    }
+  }
+
+  variables {
+    api_key        = "mock"
+    app_key        = "mock"
+    cluster_prefix = "mock"
+  }
+
+  assert {
+    condition = yamldecode(helm_release.datadog_operator.values[1]).podLabels == {
+      "tags.datadoghq.com/env"     = "production"
+      "tags.datadoghq.com/service" = "datadog-operator"
+      "tags.datadoghq.com/version" = var.operator_version
+    }
+    error_message = "Datadog operator pod templates must carry all unified service tags together."
+  }
+}
+
 run "default_manifests" {
   command = apply
 
@@ -53,6 +86,16 @@ run "monitor_thresholds" {
     source = "./regional/manifests"
   }
 
+  override_module {
+    target = module.core_helpers
+    outputs = {
+      env         = "prod"
+      environment = "production"
+      region      = "us-east1"
+      zone        = "b"
+    }
+  }
+
   variables {
     api_key        = "mock"
     app_key        = "mock"
@@ -64,6 +107,15 @@ run "monitor_thresholds" {
   assert {
     condition     = kubernetes_manifest.agent.manifest.spec.override.nodeAgent.containers.agent.logLevel == "warn"
     error_message = "The Node Agent must default to warning-level logging."
+  }
+
+  assert {
+    condition = (
+      contains(kubernetes_manifest.agent.manifest.spec.global.tags, "env:production") &&
+      kubernetes_manifest.agent.manifest.spec.override.nodeAgent.labels["tags.datadoghq.com/env"] == "production" &&
+      kubernetes_manifest.agent.manifest.spec.override.clusterAgent.labels["tags.datadoghq.com/env"] == "production"
+    )
+    error_message = "Agent global tags and both Agent pod templates must use the same full core-helper environment."
   }
 
   assert {
