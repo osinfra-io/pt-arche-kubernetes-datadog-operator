@@ -25,6 +25,7 @@ locals {
 
     podLabels = {
       "tags.datadoghq.com/env"     = module.core_helpers.environment
+      "tags.datadoghq.com/service" = "datadog-operator"
       "tags.datadoghq.com/version" = var.operator_version
     }
 
