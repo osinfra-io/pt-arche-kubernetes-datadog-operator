@@ -147,7 +147,7 @@ locals {
       ${local.kubernetes_monitor_team_notification}
       EOF
 
-      name = "[Kubernetes: ${local.cluster_name}] Pod {{pod_name.name}} is OOMKilled on namespace {{kube_namespace.name}}"
+      name = "[Kubernetes: ${local.cluster_name}] Pod is OOMKilled on namespace"
 
       options = {
         newGroupDelay     = 60
