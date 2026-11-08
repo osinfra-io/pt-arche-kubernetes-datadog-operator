@@ -20,7 +20,19 @@ locals {
 
   cluster_name = module.core_helpers.zone != null ? "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.zone}-${module.core_helpers.env}" : "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.env}"
 
+  kubernetes_monitor_options = {
+    for name, monitor in local.kubernetes_monitor_templates : name => merge(
+      {
+        notifyNoData = false
+        thresholds   = local.kubernetes_monitor_thresholds[name]
+      },
+      try(monitor.options, {})
+    )
+  }
+
   kubernetes_monitor_tags = concat(local.tags, ["integration:kubernetes"])
+
+  kubernetes_monitor_team_notification = "@team-${var.team}"
 
   kubernetes_monitor_templates = {
     "crash-loop-backoff" = {
@@ -30,7 +42,7 @@ locals {
       The status CrashloopBackOff means that a container in the Pod is started, crashes, and is restarted, over and
       over again. This monitor tracks when a pod is in a CrashloopBackOff state for your Kubernetes integration.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods in CrashLoopBackOff"
@@ -49,7 +61,7 @@ locals {
       replica Pods that should be running at any given time. This monitor tracks the number of replicas that are
       failing per deployment.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Deployments Replica Pods are Down"
@@ -67,7 +79,7 @@ locals {
       When a pod is failing it means the container either exited with non-zero status or was terminated by the
       system. This monitor tracks when more than 10 pods are failing for a given Kubernetes cluster.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods are failing"
@@ -86,7 +98,7 @@ locals {
       replica Pods that should be running at any given time. This monitor tracks when the number of replicas per
       statefulset is falling.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Statefulset Replicas are Down"
@@ -97,41 +109,6 @@ locals {
       type                = "query alert"
     }
 
-    "high-cpu-usage" = {
-      message = <<-EOF
-      Pod CPU usage is over 90% on {{kube_namespace.name}}/{{pod_name.name}} on cluster: {{kube_cluster_name.name}}.
-
-      High CPU usage in a Kubernetes pod can indicate that the application or service running inside the pod is
-      consuming more processing power than expected.
-
-      @hangouts-platform-medium-low-info-priority
-      EOF
-
-      name                = "[Kubernetes: ${local.cluster_name}] Pod CPU Usage is High"
-      priority            = 5
-      query               = "avg(last_5m):(avg:kubernetes.cpu.usage.total{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} / 10000000) / avg:kubernetes.cpu.limits{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} > 90"
-      thresholds_critical = 90
-      thresholds_warning  = 80
-      type                = "metric alert"
-    }
-
-    "high-memory-usage" = {
-      message = <<-EOF
-      Pod memory usage is over 90% on {{kube_namespace.name}}/{{pod_name.name}} on cluster: {{kube_cluster_name.name}}.
-
-      High memory usage in a Kubernetes pod occurs when the application inside the pod consumes more memory than expected.
-
-      @hangouts-platform-medium-low-info-priority
-      EOF
-
-      name                = "[Kubernetes: ${local.cluster_name}] Pod Memory Usage is High"
-      priority            = 5
-      query               = "avg(last_5m):avg:kubernetes.memory.usage{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} / avg:kubernetes.memory.limits{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} * 100 > 90"
-      thresholds_critical = 90
-      thresholds_warning  = 80
-      type                = "metric alert"
-    }
-
     "image-pull-backoff" = {
       message = <<-EOF
       Pod {{pod_name.name}} is in ImagePullBackOff on {{kube_namespace.name}}.
@@ -139,12 +116,48 @@ locals {
       The status ImagePullBackOff means that a container could not start because Kubernetes could not pull a
       container image. This monitor tracks when a pod is in an ImagePullBackOff state for your Kubernetes integration.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods in ImagePullBackOff"
       priority            = 4
       query               = "max(last_10m):default_zero(max:kubernetes_state.container.status_report.count.waiting{reason:imagepullbackoff, kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name}) >= 1"
+      thresholds_critical = 1
+      thresholds_warning  = null
+      type                = "query alert"
+    }
+
+    "oom-killed-pods" = {
+      message = <<-EOF
+      {{#is_alert}}
+
+      ## What's happening?
+      There has been at least one container terminated in pod {{pod_name.name}} on namespace {{kube_namespace.name}} with reason oomkilled in the last 10 minutes.
+
+      ## Related Links
+
+      - [Logs](/logs?query=kube_cluster_name:{{kube_cluster_name.name}}+kube_namespace:{{kube_namespace.name}}+pod_name:{{pod_name.name}}+reason:oomkilled)
+      - [Pod Explorer](/orchestration/explorer/pod?query={{pod_name.name}})
+      - [Metrics Explorer (kubernetes.containers.state.terminated)](/metric/explorer?exp_metric=kubernetes.containers.state.terminated&exp_scope=kube_cluster_name:{{kube_cluster_name.name}},kube_namespace:{{kube_namespace.name}},pod_name:{{pod_name.name}},reason:oomkilled&exp_agg=avg&exp_type=line)
+
+      {{/is_alert}}
+
+      This could happen for several reasons, for example insufficient memory limits, memory leaks in the application, or the node running out of available memory.
+
+      ${local.kubernetes_monitor_team_notification}
+      EOF
+
+      name = "[Kubernetes: ${local.cluster_name}] Pod {{pod_name.name}} is OOMKilled on namespace {{kube_namespace.name}}"
+
+      options = {
+        newGroupDelay     = 60
+        notifyAudit       = true
+        onMissingData     = "default"
+        requireFullWindow = false
+      }
+
+      priority            = 4
+      query               = "max(last_10m):default_zero(max:kubernetes.containers.state.terminated{reason:oomkilled, kube_cluster_name:${local.cluster_name}} by {kube_cluster_name,kube_namespace,pod_name}) >= 1"
       thresholds_critical = 1
       thresholds_warning  = null
       type                = "query alert"
@@ -157,7 +170,7 @@ locals {
       Kubernetes pods restart according to the restart policy. A restarting container can indicate problems with
       memory, CPU usage, or an application exiting prematurely. This monitor tracks when pods are restarting multiple times.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods Restarting"
@@ -175,7 +188,7 @@ locals {
       Kubernetes nodes can either be schedulable or unschedulable. When unschedulable, the node prevents the scheduler
       from placing new pods onto that node. This monitor tracks the percentage of schedulable nodes.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Unschedulable Nodes"

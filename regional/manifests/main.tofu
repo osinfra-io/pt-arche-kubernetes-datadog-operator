@@ -284,11 +284,7 @@ resource "kubernetes_manifest" "kubernetes_monitor_templates" {
       message = each.value.message
       name    = each.value.name
 
-      options = {
-        notifyNoData = false
-
-        thresholds = local.kubernetes_monitor_thresholds[each.key]
-      }
+      options = local.kubernetes_monitor_options[each.key]
 
       priority = each.value.priority
       query    = each.value.query
