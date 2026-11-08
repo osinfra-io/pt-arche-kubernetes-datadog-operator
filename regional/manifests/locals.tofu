@@ -22,6 +22,8 @@ locals {
 
   kubernetes_monitor_tags = concat(local.tags, ["integration:kubernetes"])
 
+  kubernetes_monitor_team_notification = "@team-${var.team}"
+
   kubernetes_monitor_templates = {
     "crash-loop-backoff" = {
       message = <<-EOF
@@ -30,7 +32,7 @@ locals {
       The status CrashloopBackOff means that a container in the Pod is started, crashes, and is restarted, over and
       over again. This monitor tracks when a pod is in a CrashloopBackOff state for your Kubernetes integration.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods in CrashLoopBackOff"
@@ -49,7 +51,7 @@ locals {
       replica Pods that should be running at any given time. This monitor tracks the number of replicas that are
       failing per deployment.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Deployments Replica Pods are Down"
@@ -67,7 +69,7 @@ locals {
       When a pod is failing it means the container either exited with non-zero status or was terminated by the
       system. This monitor tracks when more than 10 pods are failing for a given Kubernetes cluster.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods are failing"
@@ -86,7 +88,7 @@ locals {
       replica Pods that should be running at any given time. This monitor tracks when the number of replicas per
       statefulset is falling.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Statefulset Replicas are Down"
@@ -104,7 +106,7 @@ locals {
       High CPU usage in a Kubernetes pod can indicate that the application or service running inside the pod is
       consuming more processing power than expected.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pod CPU Usage is High"
@@ -121,7 +123,7 @@ locals {
 
       High memory usage in a Kubernetes pod occurs when the application inside the pod consumes more memory than expected.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pod Memory Usage is High"
@@ -139,7 +141,7 @@ locals {
       The status ImagePullBackOff means that a container could not start because Kubernetes could not pull a
       container image. This monitor tracks when a pod is in an ImagePullBackOff state for your Kubernetes integration.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods in ImagePullBackOff"
@@ -157,7 +159,7 @@ locals {
       Kubernetes pods restart according to the restart policy. A restarting container can indicate problems with
       memory, CPU usage, or an application exiting prematurely. This monitor tracks when pods are restarting multiple times.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Pods Restarting"
@@ -175,7 +177,7 @@ locals {
       Kubernetes nodes can either be schedulable or unschedulable. When unschedulable, the node prevents the scheduler
       from placing new pods onto that node. This monitor tracks the percentage of schedulable nodes.
 
-      @hangouts-platform-medium-low-info-priority
+      ${local.kubernetes_monitor_team_notification}
       EOF
 
       name                = "[Kubernetes: ${local.cluster_name}] Unschedulable Nodes"

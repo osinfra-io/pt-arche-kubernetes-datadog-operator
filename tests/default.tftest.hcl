@@ -137,4 +137,12 @@ run "monitor_thresholds" {
     ])
     error_message = "Configured critical and warning thresholds must remain unchanged."
   }
+
+  assert {
+    condition = alltrue([
+      for monitor in kubernetes_manifest.kubernetes_monitor_templates :
+      strcontains(monitor.manifest.spec.message, "@team-mock-team")
+    ])
+    error_message = "Kubernetes monitor notifications must be routed to the configured Datadog team."
+  }
 }
