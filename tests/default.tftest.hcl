@@ -120,7 +120,7 @@ run "monitor_thresholds" {
 
   assert {
     condition = alltrue([
-      for name in ["crash-loop-backoff", "failing-deployment-replicas", "failing-statefulset-replicas", "image-pull-backoff"] :
+      for name in ["crash-loop-backoff", "failing-deployment-replicas", "failing-statefulset-replicas", "image-pull-backoff", "oom-killed-pods"] :
       !contains(keys(kubernetes_manifest.kubernetes_monitor_templates[name].manifest.spec.options.thresholds), "warning")
     ])
     error_message = "Monitors without warning alerts must omit the warning threshold rather than send null to Kubernetes."
@@ -144,5 +144,27 @@ run "monitor_thresholds" {
       strcontains(monitor.manifest.spec.message, "@team-mock-team")
     ])
     error_message = "Kubernetes monitor notifications must be routed to the configured Datadog team."
+  }
+
+  assert {
+    condition = (
+      !contains(keys(kubernetes_manifest.kubernetes_monitor_templates), "high-cpu-usage") &&
+      !contains(keys(kubernetes_manifest.kubernetes_monitor_templates), "high-memory-usage") &&
+      kubernetes_manifest.kubernetes_monitor_templates["oom-killed-pods"].manifest.spec.query ==
+      "max(last_10m):default_zero(max:kubernetes.containers.state.terminated{reason:oomkilled, kube_cluster_name:mock-us-east1-b-prod} by {kube_cluster_name,kube_namespace,pod_name}) >= 1"
+    )
+    error_message = "OOMKilled monitoring must replace CPU and memory usage monitors and be scoped to the configured cluster."
+  }
+
+  assert {
+    condition = kubernetes_manifest.kubernetes_monitor_templates["oom-killed-pods"].manifest.spec.options == {
+      newGroupDelay     = 60
+      notifyAudit       = true
+      notifyNoData      = false
+      onMissingData     = "default"
+      requireFullWindow = false
+      thresholds        = { critical = 1 }
+    }
+    error_message = "The OOMKilled monitor must retain its requested notification and evaluation options."
   }
 }

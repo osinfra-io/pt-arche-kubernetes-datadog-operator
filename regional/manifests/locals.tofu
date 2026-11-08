@@ -20,6 +20,16 @@ locals {
 
   cluster_name = module.core_helpers.zone != null ? "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.zone}-${module.core_helpers.env}" : "${var.cluster_prefix}-${module.core_helpers.region}-${module.core_helpers.env}"
 
+  kubernetes_monitor_options = {
+    for name, monitor in local.kubernetes_monitor_templates : name => merge(
+      {
+        notifyNoData = false
+        thresholds   = local.kubernetes_monitor_thresholds[name]
+      },
+      try(monitor.options, {})
+    )
+  }
+
   kubernetes_monitor_tags = concat(local.tags, ["integration:kubernetes"])
 
   kubernetes_monitor_team_notification = "@team-${var.team}"
@@ -99,41 +109,6 @@ locals {
       type                = "query alert"
     }
 
-    "high-cpu-usage" = {
-      message = <<-EOF
-      Pod CPU usage is over 90% on {{kube_namespace.name}}/{{pod_name.name}} on cluster: {{kube_cluster_name.name}}.
-
-      High CPU usage in a Kubernetes pod can indicate that the application or service running inside the pod is
-      consuming more processing power than expected.
-
-      ${local.kubernetes_monitor_team_notification}
-      EOF
-
-      name                = "[Kubernetes: ${local.cluster_name}] Pod CPU Usage is High"
-      priority            = 5
-      query               = "avg(last_5m):(avg:kubernetes.cpu.usage.total{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} / 10000000) / avg:kubernetes.cpu.limits{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} > 90"
-      thresholds_critical = 90
-      thresholds_warning  = 80
-      type                = "metric alert"
-    }
-
-    "high-memory-usage" = {
-      message = <<-EOF
-      Pod memory usage is over 90% on {{kube_namespace.name}}/{{pod_name.name}} on cluster: {{kube_cluster_name.name}}.
-
-      High memory usage in a Kubernetes pod occurs when the application inside the pod consumes more memory than expected.
-
-      ${local.kubernetes_monitor_team_notification}
-      EOF
-
-      name                = "[Kubernetes: ${local.cluster_name}] Pod Memory Usage is High"
-      priority            = 5
-      query               = "avg(last_5m):avg:kubernetes.memory.usage{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} / avg:kubernetes.memory.limits{kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name} * 100 > 90"
-      thresholds_critical = 90
-      thresholds_warning  = 80
-      type                = "metric alert"
-    }
-
     "image-pull-backoff" = {
       message = <<-EOF
       Pod {{pod_name.name}} is in ImagePullBackOff on {{kube_namespace.name}}.
@@ -147,6 +122,42 @@ locals {
       name                = "[Kubernetes: ${local.cluster_name}] Pods in ImagePullBackOff"
       priority            = 4
       query               = "max(last_10m):default_zero(max:kubernetes_state.container.status_report.count.waiting{reason:imagepullbackoff, kube_cluster_name:${local.cluster_name}} by {kube_namespace,pod_name}) >= 1"
+      thresholds_critical = 1
+      thresholds_warning  = null
+      type                = "query alert"
+    }
+
+    "oom-killed-pods" = {
+      message = <<-EOF
+      {{#is_alert}}
+
+      ## What's happening?
+      There has been at least one container terminated in pod {{pod_name.name}} on namespace {{kube_namespace.name}} with reason oomkilled in the last 10 minutes.
+
+      ## Related Links
+
+      - [Logs](/logs?query=kube_cluster_name:{{kube_cluster_name.name}}+kube_namespace:{{kube_namespace.name}}+pod_name:{{pod_name.name}}+reason:oomkilled)
+      - [Pod Explorer](/orchestration/explorer/pod?query={{pod_name.name}})
+      - [Metrics Explorer (kubernetes.containers.state.terminated)](/metric/explorer?exp_metric=kubernetes.containers.state.terminated&exp_scope=kube_cluster_name:{{kube_cluster_name.name}},kube_namespace:{{kube_namespace.name}},pod_name:{{pod_name.name}},reason:oomkilled&exp_agg=avg&exp_type=line)
+
+      {{/is_alert}}
+
+      This could happen for several reasons, for example insufficient memory limits, memory leaks in the application, or the node running out of available memory.
+
+      ${local.kubernetes_monitor_team_notification}
+      EOF
+
+      name = "[Kubernetes: ${local.cluster_name}] Pod {{pod_name.name}} is OOMKilled on namespace {{kube_namespace.name}}"
+
+      options = {
+        newGroupDelay     = 60
+        notifyAudit       = true
+        onMissingData     = "default"
+        requireFullWindow = false
+      }
+
+      priority            = 4
+      query               = "max(last_10m):default_zero(max:kubernetes.containers.state.terminated{reason:oomkilled, kube_cluster_name:${local.cluster_name}} by {kube_cluster_name,kube_namespace,pod_name}) >= 1"
       thresholds_critical = 1
       thresholds_warning  = null
       type                = "query alert"
